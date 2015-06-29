@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# place this script into your remote hosts $PATH
+
+if [ "$#" -ne 1 ]; then
+    echo "usage: $0 image"
+    exit 1
+fi
+
+FILENAME=$1
+mkdir -p `dirname $FILENAME`
+LOCKFILE="${FILENAME}.lock"
+
+# lock it
+exec 200>$LOCKFILE
+flock -n 200 || \
+        { echo "An other upload is already in progress"; exit 1; }
+pid=$$
+echo $pid 1>&200
+
+version=1
+
+while [ -f "${FILENAME}.${version}" ]
+do
+  (( version++ ))
+done
+
+VERSION_FILENAME="${FILENAME}.${version}"
+
+echo "Uploading ..."
+cat > $VERSION_FILENAME && \
+ln -sf $VERSION_FILENAME $FILENAME && \
+rm $LOCKFILE

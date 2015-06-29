@@ -1,0 +1,22 @@
+#!/bin/bash
+
+IMAGE=$1
+
+if [ "$#" -ne 1 ]; then
+    echo "usage: $0 image"
+    exit 1
+fi
+
+if [ -z "$REGISSHTRY_REMOTE" ]; then
+  echo "\$REGISSHTRY_REMOTE not set";
+  exit 1
+fi
+
+if [ -z "$REGISSHTRY_PATH" ]; then
+  echo "\$REGISSHTRY_PATH not set";
+  exit 1
+fi
+
+echo "Pull image: " $IMAGE && \
+ssh $REGISSHTRY_REMOTE cat ${REGISSHTRY_PATH}/${IMAGE} | docker load && \
+echo "Successful"

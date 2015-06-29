@@ -1,0 +1,4 @@
+# put it into your .profile
+
+export REGISHHTRY_REMOTE="root@builder1"
+export REGISHHTRY_PATH="/images"
