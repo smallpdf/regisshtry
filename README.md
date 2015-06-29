@@ -13,10 +13,12 @@ ssh $REGISSHTRY_REMOTE cat ${REGISSHTRY_PATH}/${IMAGE} | docker load
 
 
 ## Installation
-- Install the script regisshtry-receive into the remote hosts $PATH
+
 - Set your local environment variables
   - REGISHHTRY_REMOTE to ssh login e.g. "user@remote-host"
   - REGISHHTRY_PATH to a remote path e.g. "/home/user/registry"
+- run `./install.sh /usr/local/bin` or where ever you want to install it
+  - will install regisshtry-pull / regisshtry-pull locally and regisshtry-receive on remote host
 - Good to go
 
 
