@@ -2,8 +2,8 @@
 Simplistic docker registry alternative. Docker save / load per ssh on remote host.
 
 - Stores the images as tar files on disk (image: foo/bar -> /registry-path/foo/bar)
-- Keeps every pushed image (/registry-path/foo/bar.1, /registry-path/foo/bar.2 ...)
-- The newest image gets symlinked (/registry-path/foo/bar -> /registry-path/foo/bar.5)
+- Keeps every pushed image (foo/bar.1, foo/bar.2 ...)
+- The newest image gets symlinked (foo/bar -> foo/bar.5)
 
 Makes deployments as easy as:
 
