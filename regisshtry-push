@@ -20,4 +20,4 @@ fi
 
 echo "Push image: " $IMAGE && \
 docker save $IMAGE| ssh $REGISSHTRY_REMOTE regisshtry-receive ${REGISSHTRY_PATH}/${IMAGE} && \
-echo "Succesful"
+echo "Successful"
