@@ -19,10 +19,10 @@ you deploy to.
 
 ## File structure
 
-`regishhtry-receive` runs on the remote host to receive the docker images.
+`regishhtry-receive` receives docker images on the remote host.
 
 
-Images are stored under following path:
+It stores the images under following path:
 
 ```
 ${REGISSHTRY_PATH}/${IMAGE}     a symlink to the last pushed image.
