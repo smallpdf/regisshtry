@@ -45,7 +45,7 @@ X               is a auto incrementing number
   - REGISHHTRY_REMOTE to ssh login e.g. "user@remote-host"
   - REGISHHTRY_PATH to a remote path e.g. "/home/user/registry"
 - run `./install.sh /usr/local/bin` or where ever you want to install it
-  - will install regisshtry-pull / regisshtry-pull locally and regisshtry-receive on the remote host
+  - will install regisshtry-pull / regisshtry-push locally and regisshtry-receive on the remote host
 - Good to go
 
 
