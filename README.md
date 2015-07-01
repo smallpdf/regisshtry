@@ -1,14 +1,41 @@
 # Regisshtry
-Simplistic docker registry alternative. Docker save / load per ssh on remote host.
 
-- Stores the images as tar files on disk (image: foo/bar -> /registry-path/foo/bar)
-- Keeps every pushed image (foo/bar.1, foo/bar.2 ...)
-- The newest image gets symlinked (foo/bar -> foo/bar.5)
+Super simplistic docker registry alternative. Docker save / load per ssh on remote host.
+
+- Stores the images as tar files on a remote host
+- Keeps every pushed image as independent tar ball with incremental numbered file names
+- Dependency free (depends only common unix tools)
+
 
 Makes deployments as easy as:
 
 ```bash
 ssh $REGISSHTRY_REMOTE cat ${REGISSHTRY_PATH}/${IMAGE} | docker load
+```
+
+Using ssh agent forwarding you can avoid storing credentials on the host
+you deploy to.
+
+
+## File structure
+
+`regishhtry-receive` runs on the remote host to receive the docker images.
+
+
+Images are stored under following path:
+
+```
+${REGISSHTRY_PATH}/${IMAGE}     a symlink to the last pushed image.
+${REGISSHTRY_PATH}/${IMAGE}.X   the actual image
+
+```
+
+where 
+
+```
+REGISSHTRY_PATH is a configurable path to the registry
+IMAGE           is the image name e.g. smallpdf/example
+X               is a auto incrementing number
 ```
 
 
