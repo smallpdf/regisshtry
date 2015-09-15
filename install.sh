@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 if [ "$#" -ne 1 ]; then
     echo "usage: $0 install-path"
     echo "e.g: $0 /usr/local/bin"
