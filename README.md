@@ -1,10 +1,10 @@
 # Regisshtry
 
-Super simplistic docker registry alternative. Docker save / load per ssh on remote host.
+Super simplistic docker registry alternative. Docker save / load via ssh on remote host.
 
 - Stores the images as tar files on a remote host
-- Keeps every pushed image as independent tar ball with incremental numbered file names
-- Dependency free (depends only common unix tools)
+- Keeps every pushed image as independent tarball with incremental numbered file names
+- Dependency-free (depends only common unix tools)
 
 
 Makes deployments as easy as:
@@ -35,7 +35,7 @@ where
 ```
 REGISSHTRY_PATH is a configurable path to the registry
 IMAGE           is the image name e.g. smallpdf/example
-X               is a auto incrementing number
+X               is an auto-incrementing number
 ```
 
 
