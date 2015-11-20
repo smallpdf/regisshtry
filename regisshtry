@@ -104,10 +104,16 @@ check_arg() {
     && err_exit
 }
 
+remote_cmd() {
+  local args=$@
+
+  ssh $REGISSHTRY_REMOTE "$args"
+}
+
 docker_image_exists() {
   local image=$1
 
-  !(is_empty "$(docker images -q $image 2>/dev/null)")
+  ! is_empty "$(docker images -q $image 2>/dev/null)"
 }
 
 compare_remote_image_id() {
@@ -115,7 +121,7 @@ compare_remote_image_id() {
   local tag="latest"
   local filepath=${REGISSHTRY_PATH}/${image}
 
-  local remote_id=$(ssh $REGISSHTRY_REMOTE tar -axf $filepath repositories -O | grep -Po '(?<="latest":")[^"]*' )
+  local remote_id=$(remote_cmd tar -axf $filepath repositories -O | grep -Po '(?<="latest":")[^"]*' )
   local local_id=$(docker images --no-trunc=true -q $image:$tag)
 
   strings_equal $remote_id $local_id
@@ -124,8 +130,8 @@ compare_remote_image_id() {
 check_docker_image_exists() {
   local image=$1
 
-  ! docker_image_exists $image \
-    && err_exit "Could not find local docker image: $image"
+  docker_image_exists $image \
+    || err_exit "Could not find local docker image: $image"
 }
 
 do_push() {
