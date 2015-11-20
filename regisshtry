@@ -46,9 +46,9 @@ is_regular_file() {
 
 strings_equal() {
   local str1=$1
-  local str2=$1
+  local str2=$2
 
-  [[ "$1" == "$2" ]]
+  [[ "$str1" == "$str2" ]]
 }
 
 err_exit() {
