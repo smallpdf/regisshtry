@@ -212,13 +212,13 @@ main() {
       do_compare $IMAGE
       ;;
 
-    --help)
-      usage
-      ;;
-
     receive)
       check_arg $IMAGE
       do_receive $IMAGE
+      ;;
+
+    --help)
+      usage
       ;;
 
     *)
