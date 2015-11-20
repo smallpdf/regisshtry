@@ -111,17 +111,31 @@ docker_image_exists() {
   !(is_empty "$(docker images -q $image 2>/dev/null)")
 }
 
+compare_remote_image_id() {
+  local image=$1
+  local tag="latest"
+  local filepath=${REGISSHTRY_PATH}/${image}
+
+  local remote_id=$(ssh $REGISSHTRY_REMOTE tar -axf $filepath repositories -O | grep -Po '(?<="latest":")[^"]*' )
+  local local_id=$(docker images --no-trunc=true -q $image:$tag)
+
+  strings_equal $remote_id $local_id
+}
+
 check_docker_image_exists() {
   local image=$1
 
-  !(docker_image_exists $image) \
-    && err_exit "Could not find docker image: $image"
+  ! docker_image_exists $image \
+    && err_exit "Could not find local docker image: $image"
 }
 
 do_push() {
   local image=$1
 
   check_docker_image_exists $image
+
+  compare_remote_image_id $image \
+    && err_exit "The remote image is already up-to-date"
 
   echo "Pushing image: $image" \
     && docker save $image \
@@ -131,6 +145,9 @@ do_push() {
 
 do_pull() {
   local image=$1
+
+  compare_remote_image_id $image \
+    && err_exit "Your local image is already up-to-date"
 
   echo "Pulling image: $image" \
     && ssh $REGISSHTRY_REMOTE cat ${REGISSHTRY_PATH}/${image} \
@@ -163,14 +180,8 @@ do_receive() {
 
 do_compare() {
   local image=$1
-  local tag="latest"
-  local filepath=${REGISSHTRY_PATH}/${image}
 
-  local remote_id=$(ssh $REGISSHTRY_REMOTE tar -axf $filepath repositories -O | grep -Po '(?<="latest":")[^"]*' )
-  local local_id=$(docker images --no-trunc=true -q $image:$tag)
-  echo "rid $remote_id"
-
-  strings_equal $remote_id $local_id \
+  compare_remote_image_id $image \
     || err_exit "$image: The local image differs from the remote image"
 
   echo "$image: The local image and the remote image are the same"
