@@ -42,10 +42,9 @@ X               is an auto-incrementing number
 ## Installation
 
 - Set your local environment variables
-  - REGISHHTRY_REMOTE to ssh login e.g. "user@remote-host"
-  - REGISHHTRY_PATH to a remote path e.g. "/home/user/registry"
-- run `./install.sh /usr/local/bin` or where ever you want to install it
-  - will install regisshtry-pull / regisshtry-push locally and regisshtry-receive on the remote host
+  - `REGISHHTRY_REMOTE` to ssh login e.g. "user@remote-host"
+  - `REGISHHTRY_PATH` to a remote path e.g. "/home/user/registry"
+- Copy `regisshtry` to `/usr/local/bin` or where ever you want to install it
 - Good to go
 
 
@@ -56,7 +55,7 @@ X               is an auto-incrementing number
 Push a local image to the registry
 
 ```bash
-regisshtry-push image
+regisshtry push image
 ```
 
 ## Pull image
@@ -64,5 +63,14 @@ regisshtry-push image
 Load a image from the registry
 
 ```bash
-regisshtry-pull image
+regisshtry pull image
+```
+
+## Compare image
+
+Check whether the local image and tha remote imaage are the same.  
+Currently only compares the `latest` tag.
+
+```bash
+regishhtry compare image
 ```
