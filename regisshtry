@@ -1,0 +1,217 @@
+#!/usr/bin/env bash
+
+readonly PROGNAME=`basename $0`
+readonly COMMAND=$1
+readonly IMAGE=$2
+readonly LOCKFILE_DIR=/tmp
+readonly LOCK_FD=200
+
+usage(){
+  cat <<- EOF
+Usage: $PROGNAME COMMAND IMAGE
+
+A simple Docker registry over SSH.
+
+Commands:
+
+    push            Export an image and push it to the registry
+    pull            Download and import an image from the registry
+    compare         Check whether the remote image differs from the 
+                    local image
+
+
+Examples:
+
+    $PROGNAME push redis
+    $PROGNAME pull redis
+EOF
+}
+
+is_empty() {
+  local var=$1
+
+  [[ -z $var ]]
+}
+
+is_readable_file() {
+  local file=$1
+
+  [[ -r $file ]]
+}
+
+is_regular_file() {
+  local file=$1
+
+  [[ -f $file ]]
+}
+
+strings_equal() {
+  local str1=$1
+  local str2=$1
+
+  [[ "$1" == "$2" ]]
+}
+
+err_exit() {
+  local err="$@"
+
+  echo $err
+  exit 1
+}
+
+lock() {
+  local lockname=$1
+  local fd=${2:-$LOCK_FD}
+  local lockfile="$lockname.lock"
+  local pid=$$
+
+  eval "exec $fd>$lockfile"
+
+  flock -n $fd \
+    || return 1
+
+  echo $pid 1>&200 \
+    && return 0
+}
+
+remove_lock() {
+  local lockname=$1
+  local lockfile="$lockname.lock"
+
+  rm $lockfile
+}
+
+load_config() {
+  is_readable_file /etc/regisshtryrc \
+    && source /etc/regisshtryrc
+
+  is_readable_file ~/.regisshtryrc \
+    && source ~/.regisshtryrc
+}
+
+check_config() {
+  is_empty $REGISSHTRY_REMOTE \
+    && err_exit "Configuration error: \$REGISSHTRY_REMOTE not set. Try '$PROGNAME --help'"
+
+  is_empty $REGISSHTRY_PATH \
+    && err_exit "Configuration error: \$REGISSHTRY_PATH not set. Try '$PROGNAME --help'"
+}
+
+check_arg() {
+  local arg=$1
+  
+  is_empty $arg \
+    && usage \
+    && err_exit
+}
+
+docker_image_exists() {
+  local image=$1
+
+  !(is_empty "$(docker images -q $image 2>/dev/null)")
+}
+
+check_docker_image_exists() {
+  local image=$1
+
+  !(docker_image_exists $image) \
+    && err_exit "Could not find docker image: $image"
+}
+
+do_push() {
+  local image=$1
+
+  check_docker_image_exists $image
+
+  echo "Pushing image: $image" \
+    && docker save $image \
+      | ssh -C $REGISSHTRY_REMOTE regisshtry receive ${REGISSHTRY_PATH}/${image} \
+    && echo "Successful"
+}
+
+do_pull() {
+  local image=$1
+
+  echo "Pulling image: $image" \
+    && ssh $REGISSHTRY_REMOTE cat ${REGISSHTRY_PATH}/${image} \
+    | docker load \
+    && echo "Successful"
+}
+
+do_receive() {
+  local filepath=$1
+  local version=1
+  local version_filepath="${filepath}.${version}"
+
+  mkdir -p `dirname $filepath`
+
+  lock $filepath \
+    || err_exit "Another upload is already in progress"
+
+  while is_regular_file $version_filepath
+  do
+    (( version++ ))
+    version_filepath="${filepath}.${version}"
+  done
+
+  echo "Uploading ..."
+
+  cat > $version_filepath \
+    && ln -sf $version_filepath $filepath \
+    && remove_lock $filepath
+}
+
+do_compare() {
+  local image=$1
+  local tag="latest"
+  local filepath=${REGISSHTRY_PATH}/${image}
+
+  local remote_id=$(ssh $REGISSHTRY_REMOTE tar -axf $filepath repositories -O | grep -Po '(?<="latest":")[^"]*' )
+  local local_id=$(docker images --no-trunc=true -q $image:$tag)
+  echo "rid $remote_id"
+
+  strings_equal $remote_id $local_id \
+    || err_exit "$image: The local image differs from the remote image"
+
+  echo "$image: The local image and the remote image are the same"
+}
+
+main() {
+  load_config
+
+  case "$COMMAND" in
+    push)
+      check_config
+      check_arg $IMAGE
+      do_push $IMAGE
+      ;;
+
+    pull)
+      check_config
+      check_arg $IMAGE
+      do_pull $IMAGE
+      ;;
+
+    compare)
+      do_compare $IMAGE
+      ;;
+
+    --help)
+      usage
+      ;;
+
+    receive)
+      check_arg $IMAGE
+      do_receive $IMAGE
+      ;;
+
+    *)
+      usage
+      err_exit
+      ;;
+  esac
+
+  exit 0
+}
+
+main
