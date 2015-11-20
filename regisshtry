@@ -3,7 +3,6 @@
 readonly PROGNAME=`basename $0`
 readonly COMMAND=$1
 readonly IMAGE=$2
-readonly LOCKFILE_DIR=/tmp
 readonly LOCK_FD=200
 
 usage(){
