@@ -19,5 +19,5 @@ if [ -z "$REGISSHTRY_PATH" ]; then
 fi
 
 echo "Push image: " $IMAGE && \
-docker save $IMAGE| ssh -C $REGISSHTRY_REMOTE regisshtry-receive ${REGISSHTRY_PATH}/${IMAGE} && \
+docker save $IMAGE | gzip -c | ssh -C $REGISSHTRY_REMOTE regisshtry-receive ${REGISSHTRY_PATH}/${IMAGE} && \
 echo "Successful"
